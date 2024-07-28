@@ -1,0 +1,41 @@
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from pydub import AudioSegment
+import os
+
+# Define a start command handler
+def start(update: Update, context: CallbackContext):
+    update.message.reply_text('Send me an audio file and I will process it.')
+
+# Define a handler for audio files
+def handle_audio(update: Update, context: CallbackContext):
+    file = update.message.audio
+    if file:
+        file_id = file.file_id
+        new_file = context.bot.get_file(file_id)
+        new_file.download('received_audio.ogg')
+        # Optional: Convert to mp3 or other formats
+        audio = AudioSegment.from_ogg('received_audio.ogg')
+        audio.export('processed_audio.mp3', format='mp3')
+        update.message.reply_text('Audio file received and processed.')
+    else:
+        update.message.reply_text('Please send an audio file.')
+
+def main():
+    # Replace 'YOUR_TOKEN' with your actual bot token
+    updater = Updater("6641518289:AAE1wJqQy4jE-hFPRMowpZDjy3QtdVgfHFA", use_context=True)
+    dp = updater.dispatcher
+
+    # Add command handlers
+    dp.add_handler(CommandHandler("start", start))
+
+    # Add message handler for audio files
+    dp.add_handler(MessageHandler(Filters.audio, handle_audio))
+
+    # Start the Bot
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == 'IZANA_100':
+    main()
+    
